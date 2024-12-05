@@ -38,7 +38,8 @@ final class ScanExecutable
                 if ($iter->isFile()) {
                     $trash['files'][] = $iter;
                 } elseif ($iter->isDir()) {
-                    $trash['dirs'][] = $iter;
+                    // $trash['dirs'][] = $iter;
+                    dump($iter);
                 }
             }
         }
