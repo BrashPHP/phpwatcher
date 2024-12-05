@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PhpWatcher;
 
 use PhpWatcher\Exceptions\NoBinDirectory;
@@ -11,46 +13,72 @@ final class ScanExecutable
     public function scan(): string
     {
         $root = dirname(__DIR__);
-        $targetDir = "{$root}/bin";
-        if (!is_dir($targetDir)) {
+        $binDir = $root . DIRECTORY_SEPARATOR . 'bin';
+
+        if (!is_dir($binDir)) {
             throw new NoBinDirectory();
         }
-        $directory = new RecursiveDirectoryIterator($targetDir);
 
-        $iterator = new RecursiveIteratorIterator($directory);
-        $trash = [];
-        $trash['files'] = [];
-        $trash['dirs'] = [];
+        $directoryIterator = new RecursiveDirectoryIterator($binDir);
+        $iterator = new RecursiveIteratorIterator($directoryIterator);
 
-        $matchFileName = "";
+        $trash = [
+            'files' => [],
+            'dirs' => [],
+        ];
 
-        foreach ($iterator as $execIterator) {
-            /**
-             * @var \SplFileInfo
-             */
-            $iter = $execIterator;
-            if ($iter->isExecutable() && ($iter->getFilename() === "watcher" || $iter->getFilename() === "watcher.exe")) {
-                $fileName = $iter->getFilename();
-                $matchFileName = $targetDir . DIRECTORY_SEPARATOR . $fileName;
-                copy($iter->getPathname(), $matchFileName);
-                unlink($iter->getPathname());
+        $matchedFilePath = '';
+
+        foreach ($iterator as $fileInfo) {
+            /** @var \SplFileInfo $fileInfo */
+            $fileName = $fileInfo->getFilename();
+
+            // Skip .gitkeep files
+            if ($fileName === '.gitkeep') {
+                continue;
+            }
+
+            $filePath = $fileInfo->getPathname();
+
+            if ($fileInfo->isExecutable() && in_array($fileName, ['watcher', 'watcher.exe'], true)) {
+                // Match and move the executable file
+                $matchedFilePath = $binDir . DIRECTORY_SEPARATOR . $fileName;
+                rename($filePath, $matchedFilePath);
+                if (!is_executable($matchedFilePath)) {
+                    chmod($matchedFilePath, 0755);
+                }
             } else {
-                if ($iter->isFile()) {
-                    $trash['files'][] = $iter;
-                } elseif ($iter->isDir()) {
-                    // $trash['dirs'][] = $iter;
-                    dump($iter);
+                // Add other files and directories to trash
+                if ($fileInfo->isFile()) {
+                    $trash['files'][] = $filePath;
+                } elseif ($fileInfo->isDir() && $fileInfo->getRealPath() !== $root && $fileInfo->getRealPath() !== $binDir) {
+                    $trash['dirs'][] = $fileInfo->getRealPath();
                 }
             }
         }
 
-        foreach ($trash['files'] as $item) {
-            unlink($item->getRealPath());
-        }
-        foreach ($trash['dirs'] as $item) {
-            rmdir($item->getRealPath());
-        }
+        $this->deleteFiles($trash['files']);
+        $this->deleteDirectories($trash['dirs']);
 
-        return $matchFileName;
+        return $matchedFilePath;
+    }
+
+
+    private function deleteFiles(array $files): void
+    {
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                unlink($file);
+            }
+        }
+    }
+
+    private function deleteDirectories(array $dirs): void
+    {
+        foreach ($dirs as $dir) {
+            if (is_dir($dir)) {
+                rmdir($dir);
+            }
+        }
     }
 }
