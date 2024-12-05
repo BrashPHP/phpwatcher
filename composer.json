@@ -1,0 +1,29 @@
+{
+    "name": "brash/php-watcher",
+    "description": "A package to watch files",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "PhpWatcher\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Gabriel Nogueira",
+            "email": "gabrieu.dev@mail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "symfony/process": "7.2.x-dev"
+    },
+    "require-dev": {
+        "symfony/var-dumper": "7.3.x-dev",
+        "friendsofphp/php-cs-fixer": "dev-master"
+    },
+    "scripts": {
+        "pre-install-cmd": [
+            "php ./scripts/download_watcher.php"
+        ]
+    }
+}
