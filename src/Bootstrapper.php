@@ -6,10 +6,11 @@ use PhpWatcher\Exceptions\NoExecutableForLocalMachine;
 
 final class Bootstrapper
 {
+
     public static function exec(): void
     {
         $execChecker = new ExecutableChecker();
-        
+
         if (!$execChecker->binExists()) {
             $assetsConnector = new AssetsConnector();
             $assets = $assetsConnector->getAssets();
@@ -37,4 +38,3 @@ final class Bootstrapper
         }
     }
 }
-

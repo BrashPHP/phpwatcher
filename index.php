@@ -5,6 +5,7 @@ use PhpWatcher\Bootstrapper;
 use PhpWatcher\ScanExecutable;
 use PhpWatcher\Watcher;
 use PhpWatcher\WatchEvent;
+use Revolt\EventLoop;
 use Symfony\Component\Process\Process;
 
 require_once "./vendor/autoload.php";
@@ -27,8 +28,11 @@ require_once "./vendor/autoload.php";
 $bootstrapper = new Bootstrapper();
 $bootstrapper->exec();
 $watcher = new Watcher();
-$watcher->onAnyChange(function(WatchEvent $event){
-    dump($event);
-});
+$watcher->watchPath(__DIR__)
+    ->onAnyChange(function (WatchEvent $event): void {
+        dump($event);
+    });
 
 $watcher->start();
+
+EventLoop::run();

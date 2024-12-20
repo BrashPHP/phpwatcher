@@ -9,13 +9,14 @@ use PhpWatcher\Exceptions\CouldNotStartWatcher;
 use PhpWatcher\Exceptions\NoExecutableForLocalMachine;
 use PhpWatcher\PathTypeEnum;
 use PhpWatcher\WatchEvent;
+use Revolt\EventLoop;
 use Symfony\Component\Process\Process;
 
 class Watcher
 {
-    protected int $interval = 500 * 1000;
+    protected float $interval = 0.5;
 
-    protected array $paths = [];
+    protected string $path = "";
 
     /**
      *
@@ -24,16 +25,6 @@ class Watcher
     protected \WeakMap $listeners;
 
     protected Closure $shouldContinue;
-
-    public static function path(string $path): self
-    {
-        return (new self())->setPaths($path);
-    }
-
-    public static function paths(string ...$paths): self
-    {
-        return (new self())->setPaths($paths);
-    }
 
     public function __construct()
     {
@@ -44,19 +35,36 @@ class Watcher
         $this->listeners->offsetSet(EffectEventWatchEnum::ANY, $anyTypes);
     }
 
-    public function setPaths(string|array $paths): self
+    /**
+     * Apply a callable whenever effects happen over asset types, e.g modify a directory or rename a file
+     * @param EffectEventWatchEnum[] $effects
+     * @param PathTypeEnum[] $types
+     * @param callable $callable
+     * @return \PhpWatcher\Watcher
+     */
+    public function on(array $effects, array $types, callable $callable): self
     {
-        if (is_string($paths)) {
-            $paths = (array) $paths;
+        foreach ($effects as $effect) {
+            foreach ($types as $type) {
+                $this->applyListener($effect, $type, $callable);
+            }
         }
-
-        $this->paths = $paths;
 
         return $this;
     }
 
-    public function on(EffectEventWatchEnum $effect, PathTypeEnum $type, callable $callable): self
+    public function watchPath(string $path): static
     {
+        $this->path = $path;
+
+        return $this;
+    }
+
+    public function applyListener(
+        EffectEventWatchEnum $effect,
+        PathTypeEnum $type,
+        callable $callable
+    ): static {
         if (!$this->listeners->offsetExists($effect)) {
             $storage = new \SplObjectStorage();
             $storage->offsetSet($type, []);
@@ -73,10 +81,10 @@ class Watcher
 
     public function onAnyChange(callable $callable): self
     {
-        return $this->on(EffectEventWatchEnum::ANY, PathTypeEnum::OTHER, $callable);
+        return $this->applyListener(EffectEventWatchEnum::ANY, PathTypeEnum::OTHER, $callable);
     }
 
-    public function setIntervalTime(int $interval): self
+    public function setIntervalTime(float $interval): self
     {
         $this->interval = $interval;
 
@@ -94,8 +102,9 @@ class Watcher
     {
         $watcher = $this->getWatchProcess();
 
-        while (true) {
+        EventLoop::repeat($this->interval, function (string $id) use ($watcher): void {
             if (!$watcher->isRunning()) {
+                EventLoop::cancel($id);
                 throw CouldNotStartWatcher::make($watcher);
             }
 
@@ -104,11 +113,9 @@ class Watcher
             }
 
             if (!($this->shouldContinue)()) {
-                break;
+                EventLoop::cancel($id);
             }
-
-            usleep($this->interval);
-        }
+        });
     }
 
     protected function getWatchProcess(): Process
@@ -130,7 +137,7 @@ class Watcher
         $execLocation = $pathCreate($likelyExistentPath);
 
         $process = new Process(
-            command: [$execLocation, __DIR__],
+            command: [$execLocation, $this->path === "" ? __DIR__ : $this->path],
             timeout: null,
             input: STDIN
         );
@@ -140,7 +147,7 @@ class Watcher
         return $process;
     }
 
-    protected function actOnOutput(string $output): void
+    public function actOnOutput(string $output): void
     {
         $lines = array_filter(
             explode(PHP_EOL, $output),
@@ -169,18 +176,11 @@ class Watcher
                 $listener($event);
             }
 
-            foreach ($this->listeners->offsetGet(EffectEventWatchEnum::ANY)->offsetGet(PathTypeEnum::OTHER) as $onAnyCallable) {
+            $anyCallables = $this->listeners->offsetGet(EffectEventWatchEnum::ANY)->offsetGet(PathTypeEnum::OTHER);
+
+            foreach ($anyCallables as $onAnyCallable) {
                 $onAnyCallable($event);
             }
-        }
-    }
-
-
-
-    protected function callAll(array $callables, string $path): void
-    {
-        foreach ($callables as $callable) {
-            $callable($path);
         }
     }
 }

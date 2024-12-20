@@ -9,7 +9,7 @@ final readonly class WatchEvent implements \JsonSerializable
         public string $pathName,
         public EffectEventWatchEnum $effectType,
         public PathTypeEnum $pathTypeEnum,
-        public ?self $associated,
+        public ?self $associated = null,
     ) {
     }
 

@@ -1,29 +1,43 @@
 {
-    "name": "brash/php-watcher",
-    "description": "A package to watch files",
-    "license": "MIT",
-    "autoload": {
-        "psr-4": {
-            "PhpWatcher\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "Gabriel Nogueira",
-            "email": "gabrieu.dev@mail.com"
-        }
-    ],
-    "minimum-stability": "dev",
-    "require": {
-        "symfony/process": "7.2.x-dev"
-    },
-    "require-dev": {
-        "symfony/var-dumper": "7.3.x-dev",
-        "friendsofphp/php-cs-fixer": "dev-master"
-    },
-    "scripts": {
-        "pre-install-cmd": [
-            "php ./scripts/download_watcher.php"
-        ]
+  "name": "brash/phpwatcher",
+  "description": "A package to watch files",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "PhpWatcher\\": "src/"
     }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Gabriel Nogueira",
+      "email": "gabrieu.dev@mail.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "symfony/process": "7.2.x-dev",
+    "revolt/event-loop": "^1.0@dev"
+  },
+  "require-dev": {
+    "symfony/var-dumper": "7.3.x-dev",
+    "laravel/pint": "^1.18.1",
+    "pestphp/pest": "^3.5.1",
+    "pestphp/pest-plugin-type-coverage": "^3.1",
+    "mockery/mockery": "2.0.x-dev"
+  },
+  "scripts": {
+    "pre-install-cmd": [
+      "PhpWatcher\\Bootstrapper::exec"
+    ]
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  }
 }
