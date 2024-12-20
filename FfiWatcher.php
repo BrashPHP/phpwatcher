@@ -8,7 +8,7 @@ require_once "./vendor/autoload.php";
 
 $intervalTime = 1000000;
 $process = new Process(
-    command: ['./wtr.watcher', __DIR__],
+    command: ['./bin/watcher', __DIR__],
     timeout: null,
     input: STDIN
 );
@@ -24,6 +24,7 @@ $process->start();
 // }
 // Finds JSON
 $re = '/{.*}/m';
+
 while (true) {
     if (!$process->isRunning()) {
         // throw new RuntimeException("Failed to open process");.

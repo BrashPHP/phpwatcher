@@ -3,6 +3,8 @@
 use PhpWatcher\Bootstrapper;
 
 use PhpWatcher\ScanExecutable;
+use PhpWatcher\Watcher;
+use PhpWatcher\WatchEvent;
 use Symfony\Component\Process\Process;
 
 require_once "./vendor/autoload.php";
@@ -24,3 +26,9 @@ require_once "./vendor/autoload.php";
 
 $bootstrapper = new Bootstrapper();
 $bootstrapper->exec();
+$watcher = new Watcher();
+$watcher->onAnyChange(function(WatchEvent $event){
+    dump($event);
+});
+
+$watcher->start();

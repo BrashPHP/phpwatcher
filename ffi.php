@@ -1,26 +1,34 @@
 <?php
 
-require_once "vendor/autoload.php";
+declare(ticks=1);
 
-$headerString = file_get_contents(__DIR__ . "/watcher/watcher-c.h");
+$stop = false;
 
-$lib = __DIR__ . "/watcher/libwatcher-c.so";
-
-$ffi = FFI::cdef($headerString, $lib);
-
-
-// $executpr = function (\FFI\CData $a, \FFI\CData $b): void {
-//     echo "Beat";
-// };
-
-$callback = function(FFI\CData $event, $context) {
- 
+$d = __DIR__;
+$hdr = file_get_contents("{$d}/watcher-c.h");
+$lib = "{$d}/libwatcher-c.so";
+$ffi = FFI::cdef($hdr, $lib);
+$onevent = function ($event, $context) {
+    echo "...\n";
 };
 
-$callbackParsed = $ffi->new("wtr_watcher_callback", true, true);
+$dir = __DIR__;
 
-// Allocate context if needed (optional)
+$watcher = $ffi->wtr_watcher_open($d, $onevent, null);
 
+$handleWatcherClose = fn() => $ffi->wtr_watcher_close($watcher);
+$handleClose = function () use (&$stop, $handleWatcherClose): never {
+    $handleWatcherClose();
+    echo "Finished :D" . PHP_EOL;
+    $stop = true;
+    exit;
+};
 
-$ffi->wtr_watcher_open(__DIR__ . "/src", FFI::addr($callbackParsed), null);
+pcntl_signal(SIGINT, $handleClose);
+pcntl_signal(SIGTERM, $handleClose);
+register_shutdown_function($handleClose);
+
+while (!$stop) {
+    // echo "HeartBeat" . PHP_EOL;
+}
 

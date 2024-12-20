@@ -47,13 +47,10 @@ final class ScanExecutable
                 if (!is_executable($matchedFilePath)) {
                     chmod($matchedFilePath, 0755);
                 }
-            } else {
-                // Add other files and directories to trash
-                if ($fileInfo->isFile()) {
-                    $trash['files'][] = $filePath;
-                } elseif ($fileInfo->isDir() && $fileInfo->getRealPath() !== $root && $fileInfo->getRealPath() !== $binDir) {
-                    $trash['dirs'][] = $fileInfo->getRealPath();
-                }
+            } elseif ($fileInfo->isFile()) {
+                $trash['files'][] = $filePath;
+            } elseif ($fileInfo->isDir() && $fileInfo->getRealPath() !== $root && $fileInfo->getRealPath() !== $binDir) {
+                $trash['dirs'][] = $fileInfo->getRealPath();
             }
         }
 

@@ -1,41 +1,27 @@
 <?php
 
-namespace PhpWatcher\dia\gabrielnogueira\G1\personal\php\PHPWatcher\src;
+namespace PhpWatcher;
 
 use Closure;
 
+use PhpWatcher\EffectEventWatchEnum;
 use PhpWatcher\Exceptions\CouldNotStartWatcher;
-use Symfony\Component\Process\ExecutableFinder;
+use PhpWatcher\Exceptions\NoExecutableForLocalMachine;
+use PhpWatcher\PathTypeEnum;
+use PhpWatcher\WatchEvent;
 use Symfony\Component\Process\Process;
 
 class Watcher
 {
-    const EVENT_TYPE_FILE_CREATED = 'fileCreated';
-    const EVENT_TYPE_FILE_UPDATED = 'fileUpdated';
-    const EVENT_TYPE_FILE_DELETED = 'fileDeleted';
-    const EVENT_TYPE_DIRECTORY_CREATED = 'directoryCreated';
-    const EVENT_TYPE_DIRECTORY_DELETED = 'directoryDeleted';
     protected int $interval = 500 * 1000;
 
     protected array $paths = [];
 
-    /** @var callable[] */
-    protected array $onFileCreated = [];
-
-    /** @var callable[] */
-    protected array $onFileUpdated = [];
-
-    /** @var callable[] */
-    protected array $onFileDeleted = [];
-
-    /** @var callable[] */
-    protected array $onDirectoryCreated = [];
-
-    /** @var callable[] */
-    protected array $onDirectoryDeleted = [];
-
-    /** @var callable[] */
-    protected array $onAny = [];
+    /**
+     *
+     * @var \WeakMap<EffectEventWatchEnum,\SplObjectStorage<PathTypeEnum,callable[]>>
+     */
+    protected \WeakMap $listeners;
 
     protected Closure $shouldContinue;
 
@@ -44,20 +30,24 @@ class Watcher
         return (new self())->setPaths($path);
     }
 
-    public static function paths(...$paths): self
+    public static function paths(string ...$paths): self
     {
         return (new self())->setPaths($paths);
     }
 
     public function __construct()
     {
-        $this->shouldContinue = fn () => true;
+        $this->shouldContinue = fn() => true;
+        $this->listeners = new \WeakMap();
+        $anyTypes = new \SplObjectStorage();
+        $anyTypes[PathTypeEnum::OTHER] = [];
+        $this->listeners->offsetSet(EffectEventWatchEnum::ANY, $anyTypes);
     }
 
-    public function setPaths(string | array $paths): self
+    public function setPaths(string|array $paths): self
     {
         if (is_string($paths)) {
-            $paths = func_get_args();
+            $paths = (array) $paths;
         }
 
         $this->paths = $paths;
@@ -65,48 +55,27 @@ class Watcher
         return $this;
     }
 
-    public function onFileCreated(callable $onFileCreated): self
+    public function on(EffectEventWatchEnum $effect, PathTypeEnum $type, callable $callable): self
     {
-        $this->onFileCreated[] = $onFileCreated;
+        if (!$this->listeners->offsetExists($effect)) {
+            $storage = new \SplObjectStorage();
+            $storage->offsetSet($type, []);
+            $this->listeners->offsetSet($effect, $storage);
+        }
 
-        return $this;
-    }
-
-    public function onFileUpdated(callable $onFileUpdated): self
-    {
-        $this->onFileUpdated[] = $onFileUpdated;
-
-        return $this;
-    }
-
-    public function onFileDeleted(callable $onFileDeleted): self
-    {
-        $this->onFileDeleted[] = $onFileDeleted;
-
-        return $this;
-    }
-
-    public function onDirectoryCreated(callable $onDirectoryCreated): self
-    {
-        $this->onDirectoryCreated[] = $onDirectoryCreated;
-
-        return $this;
-    }
-
-    public function onDirectoryDeleted(callable $onDirectoryDeleted): self
-    {
-        $this->onDirectoryDeleted[] = $onDirectoryDeleted;
+        $effect = $this->listeners->offsetGet($effect);
+        $array = $effect->offsetGet($type);
+        array_push($array, $callable);
+        $effect->offsetSet($type, $array);
 
         return $this;
     }
 
     public function onAnyChange(callable $callable): self
     {
-        $this->onAny[] = $callable;
-
-        return $this;
+        return $this->on(EffectEventWatchEnum::ANY, PathTypeEnum::OTHER, $callable);
     }
-    
+
     public function setIntervalTime(int $interval): self
     {
         $this->interval = $interval;
@@ -126,7 +95,7 @@ class Watcher
         $watcher = $this->getWatchProcess();
 
         while (true) {
-            if (! $watcher->isRunning()) {
+            if (!$watcher->isRunning()) {
                 throw CouldNotStartWatcher::make($watcher);
             }
 
@@ -134,7 +103,7 @@ class Watcher
                 $this->actOnOutput($output);
             }
 
-            if (! ($this->shouldContinue)()) {
+            if (!($this->shouldContinue)()) {
                 break;
             }
 
@@ -142,19 +111,28 @@ class Watcher
         }
     }
 
-
-    
     protected function getWatchProcess(): Process
     {
-        $command = [
-            (new ExecutableFinder)->find('node'),
-            realpath(__DIR__ . '/../bin/file-watcher.js'),
-            json_encode($this->paths),
-        ];
+        $targets = ['watcher', 'watcher.exe'];
+        $realBinLocation = realpath(__DIR__ . '/../bin');
+        $pathCreate = fn(string $el) => $realBinLocation . DIRECTORY_SEPARATOR . $el;
+
+        $realTargetPath = array_filter($targets, fn($el) => is_executable(
+            $pathCreate($el)
+        ));
+
+        $likelyExistentPath = array_pop($realTargetPath);
+
+        if (!$likelyExistentPath) {
+            throw new NoExecutableForLocalMachine();
+        }
+
+        $execLocation = $pathCreate($likelyExistentPath);
 
         $process = new Process(
-            command: $command,
+            command: [$execLocation, __DIR__],
             timeout: null,
+            input: STDIN
         );
 
         $process->start();
@@ -164,28 +142,40 @@ class Watcher
 
     protected function actOnOutput(string $output): void
     {
-        $lines = explode(PHP_EOL, $output);
+        $lines = array_filter(
+            explode(PHP_EOL, $output),
+            fn($line): bool =>
+            \json_validate($line)
+        );
 
-        $lines = array_filter($lines);
+        $events = array_map(
+            fn($json): WatchEvent => WatchEvent::fromArray(
+                \json_decode($json, true)
+            ),
+            $lines
+        );
 
-        foreach ($lines as $line) {
-            [$type, $path] = explode(' - ', $line, 2);
+        foreach ($events as $event) {
+            $listeners = [];
 
-            $path = trim($path);
+            if (
+                $this->listeners->offsetExists($event->effectType) &&
+                $this->listeners->offsetGet($event->effectType)->offsetExists($event->pathTypeEnum)
+            ) {
+                $listeners = $this->listeners->offsetGet($event->effectType)->offsetGet($event->pathTypeEnum);
+            }
 
-            match ($type) {
-                static::EVENT_TYPE_FILE_CREATED => $this->callAll($this->onFileCreated, $path),
-                static::EVENT_TYPE_FILE_UPDATED => $this->callAll($this->onFileUpdated, $path),
-                static::EVENT_TYPE_FILE_DELETED => $this->callAll($this->onFileDeleted, $path),
-                static::EVENT_TYPE_DIRECTORY_CREATED => $this->callAll($this->onDirectoryCreated, $path),
-                static::EVENT_TYPE_DIRECTORY_DELETED => $this->callAll($this->onDirectoryDeleted, $path),
-            };
+            foreach ($listeners as $listener) {
+                $listener($event);
+            }
 
-            foreach ($this->onAny as $onAnyCallable) {
-                $onAnyCallable($type, $path);
+            foreach ($this->listeners->offsetGet(EffectEventWatchEnum::ANY)->offsetGet(PathTypeEnum::OTHER) as $onAnyCallable) {
+                $onAnyCallable($event);
             }
         }
     }
+
+
 
     protected function callAll(array $callables, string $path): void
     {

@@ -10,4 +10,5 @@ enum EffectEventWatchEnum: string
     case DESTROY = "destroy";
     case OWNER = "owner";
     case OTHER = "other";
+    case ANY = "any";
 }
