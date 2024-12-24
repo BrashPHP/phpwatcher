@@ -26,6 +26,8 @@ class Watcher
 
     protected Closure $shouldContinue;
 
+    protected Process $process;
+
     public function __construct()
     {
         $this->shouldContinue = fn() => true;
@@ -100,7 +102,7 @@ class Watcher
 
     public function start(): void
     {
-        $watcher = $this->getWatchProcess();
+        $this->process = $watcher = $this->getWatchProcess();
 
         EventLoop::repeat($this->interval, function (string $id) use ($watcher): void {
             if (!$watcher->isRunning()) {
@@ -114,8 +116,14 @@ class Watcher
 
             if (!($this->shouldContinue)()) {
                 EventLoop::cancel($id);
+                $this->stop();
             }
         });
+    }
+
+    public function stop(): int|null
+    {
+        return $this->process->stop(1, SIGINT);
     }
 
     protected function getWatchProcess(): Process
