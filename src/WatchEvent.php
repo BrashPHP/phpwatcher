@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpWatcher;
+namespace Brash\PhpWatcher;
 
 final readonly class WatchEvent implements \JsonSerializable
 {

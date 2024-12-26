@@ -1,5 +1,5 @@
 <?php
-namespace PhpWatcher;
+namespace Brash\PhpWatcher;
 
 enum PathTypeEnum: string {
     case DIR = 'dir';

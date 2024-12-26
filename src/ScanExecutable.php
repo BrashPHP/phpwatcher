@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpWatcher;
+namespace Brash\PhpWatcher;
 
-use PhpWatcher\Exceptions\NoBinDirectory;
+use Brash\PhpWatcher\Exceptions\NoBinDirectory;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 

@@ -1,10 +1,10 @@
 <?php
 
-use PhpWatcher\Watcher;
-use PhpWatcher\EffectEventWatchEnum;
-use PhpWatcher\PathTypeEnum;
-use PhpWatcher\Exceptions\NoExecutableForLocalMachine;
-use PhpWatcher\WatchEvent;
+use Brash\PhpWatcher\Watcher;
+use Brash\PhpWatcher\EffectEventWatchEnum;
+use Brash\PhpWatcher\PathTypeEnum;
+use Brash\PhpWatcher\Exceptions\NoExecutableForLocalMachine;
+use Brash\PhpWatcher\WatchEvent;
 use Symfony\Component\Process\Process;
 
 beforeEach(function () {

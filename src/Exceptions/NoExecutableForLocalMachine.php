@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpWatcher\Exceptions;
+namespace Brash\PhpWatcher\Exceptions;
 
 class NoExecutableForLocalMachine extends \Exception
 {

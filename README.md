@@ -8,9 +8,9 @@ Under the hood it uses Watcher, A filesystem event watcher that is simple, fast 
 Here's how you can start watching a directory and get notified of any changes:
 
 ```php
-use PhpWatcher\Bootstrapper;
-use PhpWatcher\Watcher;
-use PhpWatcher\WatchEvent;
+use Brash\PhpWatcher\Bootstrapper;
+use Brash\PhpWatcher\Watcher;
+use Brash\PhpWatcher\WatchEvent;
 use Revolt\EventLoop;
 
 require_once "./vendor/autoload.php";

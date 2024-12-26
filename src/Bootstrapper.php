@@ -1,8 +1,8 @@
 <?php
 
-namespace PhpWatcher;
+namespace Brash\PhpWatcher;
 
-use PhpWatcher\Exceptions\NoExecutableForLocalMachine;
+use Brash\PhpWatcher\Exceptions\NoExecutableForLocalMachine;
 
 final class Bootstrapper
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpWatcher;
+namespace Brash\PhpWatcher;
 
 enum ArchitectureEnum {
     case X86;

@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpWatcher;
+namespace Brash\PhpWatcher;
 
 final class WatcherTarDownloader
 {

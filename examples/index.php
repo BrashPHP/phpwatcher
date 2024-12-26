@@ -1,10 +1,10 @@
 <?php
 
-use PhpWatcher\Bootstrapper;
-use PhpWatcher\EffectEventWatchEnum;
-use PhpWatcher\PathTypeEnum;
-use PhpWatcher\Watcher;
-use PhpWatcher\WatchEvent;
+use Brash\PhpWatcher\Bootstrapper;
+use Brash\PhpWatcher\EffectEventWatchEnum;
+use Brash\PhpWatcher\PathTypeEnum;
+use Brash\PhpWatcher\Watcher;
+use Brash\PhpWatcher\WatchEvent;
 use Revolt\EventLoop;
 
 require_once __DIR__. "/../vendor/autoload.php";
