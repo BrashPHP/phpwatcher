@@ -7,7 +7,7 @@ use PhpWatcher\Watcher;
 use PhpWatcher\WatchEvent;
 use Revolt\EventLoop;
 
-require_once "./vendor/autoload.php";
+require_once __DIR__. "/../vendor/autoload.php";
 
 $bootstrapper = new Bootstrapper();
 $bootstrapper->exec();
@@ -23,10 +23,11 @@ $watcher->on([EffectEventWatchEnum::CREATE], [PathTypeEnum::FILE], function(Watc
 
 });
 
-$watcher->shouldContinue(fn () => false);
+$watcher->shouldContinue(fn () => true);
 $watcher->setIntervalTime(1);
 EventLoop::onSignal(SIGINT, function () use ($watcher) {
     $watcher->stop();
+    exit();
 });
 
 EventLoop::run();

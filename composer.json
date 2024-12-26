@@ -1,6 +1,6 @@
 {
   "name": "brash/phpwatcher",
-  "description": "A package to watch files",
+  "description": "A package to watch filesystem events",
   "license": "MIT",
   "autoload": {
     "psr-4": {
@@ -20,7 +20,7 @@
   ],
   "minimum-stability": "dev",
   "require": {
-    "symfony/process": "7.2.x-dev",
+    "symfony/process": "^7.0",
     "revolt/event-loop": "^1.0@dev"
   },
   "require-dev": {

@@ -78,3 +78,7 @@ To change the Watcher's speed, simply use:
 $watcher->setIntervalTime(1); // in seconds
 
 ```
+
+## Versioning
+
+This package follows the semver semantic versioning specification.

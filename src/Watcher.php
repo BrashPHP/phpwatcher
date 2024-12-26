@@ -115,8 +115,8 @@ class Watcher
             }
 
             if (!($this->shouldContinue)()) {
-                EventLoop::cancel($id);
                 $this->stop();
+                EventLoop::cancel($id);
             }
         });
     }
