@@ -20,8 +20,12 @@
   ],
   "minimum-stability": "dev",
   "require": {
-    "symfony/process": "^7.0",
-    "revolt/event-loop": "^1.0@dev"
+    "minicli/command-help": "^1.0",
+    "minicli/minicli": "^4.2",
+    "nunomaduro/termwind": "^2.0",
+    "php": "^8.3",
+    "revolt/event-loop": "^1.0@dev",
+    "symfony/process": "^7.0"
   },
   "require-dev": {
     "symfony/var-dumper": "7.3.x-dev",
@@ -33,7 +37,8 @@
   "scripts": {
     "pre-install-cmd": [
       "PhpWatcher\\Bootstrapper::exec"
-    ]
+    ],
+    "watch-example": "./bin/watch watch path=examples/log.php"
   },
   "config": {
     "allow-plugins": {

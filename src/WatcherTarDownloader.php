@@ -8,7 +8,7 @@ final class WatcherTarDownloader
     public function download($url): void
     {
         $root = dirname(__DIR__);
-        $targetDir = "{$root}/bin";
+        $targetDir = "{$root}/bin-support";
         $tmpDir = sys_get_temp_dir();
         $tarArchive = "{$tmpDir}/zipfile.tar";
         copy($url, $tarArchive);

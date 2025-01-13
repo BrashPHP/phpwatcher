@@ -13,7 +13,7 @@ final class ScanExecutable
     public function scan(): string
     {
         $root = dirname(__DIR__);
-        $binDir = $root . DIRECTORY_SEPARATOR . 'bin';
+        $binDir = $root . DIRECTORY_SEPARATOR . 'bin-support';
 
         if (!is_dir($binDir)) {
             throw new NoBinDirectory();

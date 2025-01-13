@@ -5,10 +5,10 @@ namespace Brash\PhpWatcher;
 use Closure;
 
 use Brash\PhpWatcher\EffectEventWatchEnum;
-use Brash\PhpWatcher\Exceptions\CouldNotStartWatcher;
 use Brash\PhpWatcher\Exceptions\NoExecutableForLocalMachine;
 use Brash\PhpWatcher\PathTypeEnum;
 use Brash\PhpWatcher\WatchEvent;
+use PhpWatcher\Exceptions\CouldNotStartWatcher;
 use Revolt\EventLoop;
 use Symfony\Component\Process\Process;
 
@@ -42,7 +42,6 @@ class Watcher
      * @param EffectEventWatchEnum[] $effects
      * @param PathTypeEnum[] $types
      * @param callable $callable
-     * @return \PhpWatcher\Watcher
      */
     public function on(array $effects, array $types, callable $callable): self
     {
@@ -129,7 +128,7 @@ class Watcher
     protected function getWatchProcess(): Process
     {
         $targets = ['watcher', 'watcher.exe'];
-        $realBinLocation = realpath(__DIR__ . '/../bin');
+        $realBinLocation = realpath(__DIR__ . '/../bin-support');
         $pathCreate = fn(string $el) => $realBinLocation . DIRECTORY_SEPARATOR . $el;
 
         $realTargetPath = array_filter($targets, fn($el) => is_executable(
