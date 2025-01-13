@@ -10,7 +10,7 @@ class ErrorMessage
     {
         render(<<<HTML
                 <div class="py-2">
-                    <b class="px-4 bg-red-600">An error occured: </b>
+                    <b class="px-1 bg-red-600">An error occured: </b>
                     {$buffer}
                 </div>
             HTML);

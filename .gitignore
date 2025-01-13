@@ -6,5 +6,4 @@
 /vendor/
 *.swp
 *.swo
-/bin/watcher
-/bin/watcher.exe
+/bin/

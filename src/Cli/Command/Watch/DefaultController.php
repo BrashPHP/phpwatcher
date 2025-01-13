@@ -49,7 +49,6 @@ class DefaultController extends BaseController
 
         $watcher->watchPath($this->watchingDir)
             ->onAnyChange(function (WatchEvent $watchEvent) use ($processService, &$leastRecentEvent): void {
-                dump($watchEvent);
                 if ($watchEvent->effectTime - $leastRecentEvent->effectTime  > 1_000_000) {
                     $processService->resetProcess();
 

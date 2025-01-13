@@ -35,7 +35,11 @@ class ProcessService
                 return;
             }
 
+            $this->errorMessage->__invoke('An error occured\n' . $this->process->getErrorOutput());
+
             EventLoop::cancel($id);
+
+            exit();
         });
     }
 

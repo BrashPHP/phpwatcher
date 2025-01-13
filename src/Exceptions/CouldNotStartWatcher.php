@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpWatcher\Exceptions;
+namespace Brash\PhpWatcher\Exceptions;
 
 use Exception;
 use Symfony\Component\Process\Process;

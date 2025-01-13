@@ -2,13 +2,13 @@
 
 namespace Brash\PhpWatcher;
 
+use Brash\PhpWatcher\Exceptions\CouldNotStartWatcher;
 use Closure;
 
 use Brash\PhpWatcher\EffectEventWatchEnum;
 use Brash\PhpWatcher\Exceptions\NoExecutableForLocalMachine;
 use Brash\PhpWatcher\PathTypeEnum;
 use Brash\PhpWatcher\WatchEvent;
-use PhpWatcher\Exceptions\CouldNotStartWatcher;
 use Revolt\EventLoop;
 use Symfony\Component\Process\Process;
 
