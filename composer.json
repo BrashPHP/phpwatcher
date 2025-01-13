@@ -18,6 +18,7 @@
       "email": "gabrieu.dev@mail.com"
     }
   ],
+  "bin": ["bin/watch"],
   "minimum-stability": "dev",
   "require": {
     "minicli/command-help": "^1.0",

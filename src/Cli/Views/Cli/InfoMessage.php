@@ -10,7 +10,6 @@ class InfoMessage
     {
         render(<<<HTML
                 <div class="py-2">
-                    <b class="pr-4 bg-blue-400">Info: </b>
                     {$buffer}
                 </div>
             HTML);
