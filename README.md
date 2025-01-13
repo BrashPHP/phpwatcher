@@ -30,6 +30,16 @@ EventLoop::run();
 
 ```
 
+### Integrated Binary
+
+Besides directly call the API, it is useful to simply use composer to watch for a file and the current working directory:
+
+```bash
+./vendor/bin/watch watch path="your_path"
+```
+
+This will watch for changes in all current working directory, i.e, root project where the vendor folder is located.
+
 ### Change Types
 
 Change types can be listened through the following API:

@@ -29,9 +29,9 @@ class DefaultController extends BaseController
 
         if ($this->watchingDir === null || $invalidPath) {
             $this->invalidPathMessage($path);
+        } else {
+            $this->setWatcher($path);
         }
-
-        $this->setWatcher($path);
     }
 
     private function setWatcher(string $path): void
@@ -49,7 +49,7 @@ class DefaultController extends BaseController
 
         $watcher->watchPath($this->watchingDir)
             ->onAnyChange(function (WatchEvent $watchEvent) use ($processService, &$leastRecentEvent): void {
-                if ($watchEvent->effectTime - $leastRecentEvent->effectTime  > 1_000_000) {
+                if ($watchEvent->effectTime - $leastRecentEvent->effectTime > 1_000_000) {
                     $processService->resetProcess();
 
                     $this->restartMessage();
